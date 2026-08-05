@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turnamen Bola Voli - Klasemen & Jadwal Official FIVB</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        display: ['Orbitron', 'sans-serif'],
+                    },
+                    colors: {
+                        gold: {
+                            400: '#FACC15',
+                            500: '#EAB308',
+                            600: '#CA8A04',
+                        },
+                        dark: {
+                            900: '#0F172A',
+                            800: '#1E293B',
+                            700: '#334155'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gold-gradient {
+            background: linear-gradient(135deg, #FFF099 0%, #FACC15 50%, #B45309 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .card-glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen pb-20 relative">
+
+    <!-- Header / Navbar -->
+    <header class="border-b border-slate-800 bg-slate-900/80 sticky top-0 z-40 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-300 flex items-center justify-center shadow-lg shadow-amber-500/20 text-slate-950 text-xl font-bold">
+                    <i class="fa-solid fa-volleyball"></i>
+                </div>
+                <div>
+                    <h1 class="font-display font-extrabold text-lg md:text-xl text-white tracking-wider">TURNAMEN VOLI WARGA</h1>
+                    <p class="text-xs text-amber-400 font-semibold tracking-wide">STANDAR ATURAN FIVB RESMI</p>
+                </div>
+            </div>
+
+            <!-- Admin Status Indicator (Hanya muncul jika sudah login) -->
+            <div id="adminBadge" class="hidden px-3 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold rounded-full flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span> Admin Mode Active
+                <button onclick="logoutAdmin()" class="ml-2 text-slate-400 hover:text-rose-400" title="Logout"><i class="fa-solid fa-power-off"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Content Container -->
+    <main class="max-w-7xl mx-auto px-4 pt-8 space-y-10">
+
+        <!-- LIVE SCORE BANNER SECTION -->
+        <section class="space-y-3">
+            <div class="flex items-center gap-2">
+                <span class="relative flex h-3 w-3">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
+                </span>
+                <h2 class="font-display text-base md:text-lg font-bold text-white tracking-wider uppercase">
+                    LIVE SCORE & HIGHLIGHT MATCH
+                </h2>
+            </div>
+            <div id="liveScoreContainer" class="card-glass p-6 rounded-2xl border-l-4 border-l-rose-500 bg-gradient-to-r from-slate-900/90 via-slate-900/60 to-slate-950/80">
+                <!-- Live Score injected by JS -->
+            </div>
+        </section>
+
+        <!-- Banner Info FIVB -->
+        <section class="card-glass p-6 rounded-2xl relative overflow-hidden border-l-4 border-l-amber-500">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-white mb-1">Klasemen Otomatis Standard FIVB</h2>
+                    <p class="text-sm text-slate-400">Urutan Penentuan Peringkat: 1. Jumlah Kemenangan | 2. Poin Pertandingan | 3. Rasio Set | 4. Rasio Poin | 5. Head to Head</p>
+                </div>
+                <div class="text-xs bg-slate-900/90 px-4 py-2 rounded-xl border border-slate-800 text-slate-300 space-y-1">
+                    <div><b class="text-amber-400">Menang 3-0 / 3-1:</b> 3 Poin (Kalah: 0)</div>
+                    <div><b class="text-amber-400">Menang 3-2:</b> 2 Poin (Kalah: 1)</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Standings Table -->
+        <section class="space-y-4">
+            <div class="flex justify-between items-center">
+                <h2 class="font-display text-lg md:text-xl font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-trophy text-amber-400"></i> KLASEMEN TIM
+                </h2>
+                <span class="text-xs text-slate-400">Terakhir Diperbarui Otomatis</span>
+            </div>
+
+            <div class="overflow-x-auto card-glass rounded-2xl shadow-2xl">
+                <table class="w-full text-left text-sm text-slate-300">
+                    <thead class="bg-slate-900/90 text-xs uppercase text-slate-400 tracking-wider border-b border-slate-800">
+                        <tr>
+                            <th class="py-4 px-4 text-center">Pos</th>
+                            <th class="py-4 px-4">Tim</th>
+                            <th class="py-4 px-3 text-center">Main</th>
+                            <th class="py-4 px-3 text-center font-bold text-emerald-400">M</th>
+                            <th class="py-4 px-3 text-center font-bold text-rose-400">K</th>
+                            <th class="py-4 px-3 text-center font-bold text-amber-400 bg-amber-500/10">Poin</th>
+                            <th class="py-4 px-3 text-center">Set (M-K)</th>
+                            <th class="py-4 px-3 text-center">Rasio Set</th>
+                            <th class="py-4 px-3 text-center">Poin (M-K)</th>
+                            <th class="py-4 px-3 text-center">Rasio Poin</th>
+                        </tr>
+                    </thead>
+                    <tbody id="standingsBody" class="divide-y divide-slate-800/60 font-medium">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Match Schedule & Referee Details -->
+        <section class="space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <h2 class="font-display text-lg md:text-xl font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-calendar-days text-amber-400"></i> JADWAL & HASIL PERTANDINGAN
+                </h2>
+                <div class="flex gap-2">
+                    <select id="statusFilter" onchange="renderMatches()" class="bg-slate-900 border border-slate-800 text-xs rounded-xl px-3 py-2 text-slate-300 focus:outline-none focus:border-amber-500">
+                        <option value="ALL">Semua Pertandingan</option>
+                        <option value="BELUM">Belum Main</option>
+                        <option value="SELESAI">Selesai</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="matchesContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Matches injected here -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Disamarkan: Tombol Login Admin Tersembunyi di Sudut Kanan Bawah -->
+    <footer class="mt-16 border-t border-slate-900 py-6 text-center text-xs text-slate-600 relative">
+        <p>© Turnamen Bola Voli Warga. Hak Cipta Dilindungi.</p>
+        <button onclick="toggleAdminModal()" class="absolute right-4 bottom-4 text-slate-800 hover:text-slate-600 transition p-2" title="System Settings">
+            <i class="fa-solid fa-gear"></i>
+        </button>
+    </footer>
+
+    <!-- Admin Login Modal -->
+    <div id="loginModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="card-glass p-6 rounded-2xl max-w-sm w-full space-y-4 border border-slate-700">
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-user-shield text-amber-400"></i> Akses Panel Admin
+            </h3>
+            <p class="text-xs text-slate-400">Masukkan kata sandi admin untuk mengubah skor & jadwal.</p>
+            <input type="password" id="adminPassInput" placeholder="Password (Default: admin123)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
+            <div class="flex gap-2">
+                <button onclick="toggleAdminModal()" class="w-1/2 py-2 text-xs rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300">Batal</button>
+                <button onclick="loginAdmin()" class="w-1/2 py-2 text-xs rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold">Login</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Edit Match Modal -->
+    <div id="editMatchModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="card-glass p-6 rounded-2xl max-w-lg w-full space-y-5 border border-slate-700 my-8">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="text-base font-bold text-white" id="modalMatchTitle">Input Skor Pertandingan</h3>
+                <button onclick="closeEditModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="text-xs text-amber-400 bg-amber-500/10 p-3 rounded-xl border border-amber-500/20">
+                Pemenang pertandingan (3 Set kemenangan) dan poin klasemen FIVB akan terhitung secara otomatis.
+            </div>
+
+            <form id="scoreForm" onsubmit="saveScore(event)" class="space-y-4">
+                <input type="hidden" id="editMatchId">
+                
+                <div class="grid grid-cols-2 gap-4 text-center bg-slate-900/80 p-3 rounded-xl">
+                    <div id="modalTeam1Name" class="font-bold text-amber-400 text-sm"></div>
+                    <div id="modalTeam2Name" class="font-bold text-amber-400 text-sm"></div>
+                </div>
+
+                <!-- 5 Sets Input -->
+                <div class="space-y-2">
+                    <label class="text-xs text-slate-400 font-semibold uppercase">Skor Per Set (Kosongkan jika set tidak dimainkan)</label>
+                    <div id="setsInputContainer" class="space-y-2">
+                        <!-- JS creates 5 set rows -->
+                    </div>
+                </div>
+
+                <!-- Referee Schedule Edit -->
+                <div class="pt-3 border-t border-slate-800 space-y-3">
+                    <label class="text-xs text-slate-400 font-semibold uppercase">Petugas Wasit & Linesman</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <span class="text-[10px] text-slate-400">Wasit 1</span>
+                            <input type="text" id="editWasit1" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1 text-xs text-white">
+                        </div>
+                        <div>
+                            <span class="text-[10px] text-slate-400">Wasit 2</span>
+                            <input type="text" id="editWasit2" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1 text-xs text-white">
+                        </div>
+                        <div>
+                            <span class="text-[10px] text-slate-400">Linesman</span>
+                            <input type="text" id="editLinesman" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1 text-xs text-white">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="resetMatchScore()" class="px-4 py-2 text-xs rounded-xl bg-rose-500/20 text-rose-300 border border-rose-500/30 hover:bg-rose-500/30">Reset Skor</button>
+                    <button type="submit" class="flex-1 py-2 text-xs rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold">Simpan & Update Klasemen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Script Data & App Logic -->
+    <script>
+        // Initial match schedule parsed directly from Excel
+        const rawSchedule = [
+            { id: 1, date: "2026-07-27", time: "21.00", team1: "MALAM RABU", team2: "MALAM SELASA", wasit1: "RANTO", wasit2: "SUPRATMAN", linesman: "PEMUDA" },
+            { id: 2, date: "2026-07-28", time: "21.00", team1: "MALAM JUMAT", team2: "MALAM SABTU", wasit1: "NURI", wasit2: "SUPRIHONO", linesman: "PEMUDA" },
+            { id: 3, date: "2026-07-29", time: "19.30", team1: "MALAM KAMIS", team2: "BAHU RINGKIH", wasit1: "RANTO", wasit2: "IRWAN", linesman: "PEMUDA" },
+            { id: 4, date: "2026-07-29", time: "21.00", team1: "MALAM MINGGU", team2: "MALAM SENIN", wasit1: "IRWAN", wasit2: "RANTO", linesman: "MLM SLS" },
+            { id: 5, date: "2026-07-30", time: "19.30", team1: "MALAM RABU", team2: "MALAM SABTU", wasit1: "WARDOYO", wasit2: "SUPRATMAN", linesman: "PEMUDA" },
+            { id: 6, date: "2026-07-30", time: "21.00", team1: "MALAM SELASA", team2: "BAHU RINGKIH", wasit1: "SUPRATMAN", wasit2: "WARDOYO", linesman: "PEMUDA" },
+            { id: 7, date: "2026-07-31", time: "19.30", team1: "MALAM JUMAT", team2: "MALAM SENIN", wasit1: "IRWAN", wasit2: "RANTO", linesman: "PEMUDA" },
+            { id: 8, date: "2026-07-31", time: "21.00", team1: "MALAM KAMIS", team2: "MALAM MINGGU", wasit1: "RANTO", wasit2: "IRWAN", linesman: "MLM RB" },
+            { id: 9, date: "2026-08-01", time: "21.00", team1: "MALAM RABU", team2: "BAHU RINGKIH", wasit1: "SUPRATMAN", wasit2: "SARTONO", linesman: "PEMUDA" },
+            { id: 10, date: "2026-08-02", time: "21.00", team1: "MALAM SABTU", team2: "MALAM SENIN", wasit1: "NURI", wasit2: "LUJENG", linesman: "PEMUDA" },
+            { id: 11, date: "2026-08-03", time: "19.30", team1: "MALAM SELASA", team2: "MALAM MINGGU", wasit1: "WARDOYO", wasit2: "RANTO", linesman: "MLM SBT" },
+            { id: 12, date: "2026-08-03", time: "21.00", team1: "MALAM JUMAT", team2: "MALAM KAMIS", wasit1: "RANTO", wasit2: "WARDOYO", linesman: "PEMUDA" },
+            { id: 13, date: "2026-08-04", time: "19.30", team1: "MALAM RABU", team2: "MALAM SENIN", wasit1: "IRWAN", wasit2: "SARTONO", linesman: "PEMUDA" },
+            { id: 14, date: "2026-08-04", time: "21.00", team1: "BAHU RINGKIH", team2: "MALAM MINGGU", wasit1: "SARTONO", wasit2: "IRWAN", linesman: "MLM KMS" },
+            { id: 15, date: "2026-08-05", time: "19.30", team1: "MALAM SABTU", team2: "MALAM KAMIS", wasit1: "SUPRIHONO", wasit2: "NURI", linesman: "PEMUDA" },
+            { id: 16, date: "2026-08-05", time: "21.00", team1: "MALAM SELASA", team2: "MALAM JUMAT", wasit1: "NURI", wasit2: "SUPRIHONO", linesman: "PEMUDA" },
+            { id: 17, date: "2026-08-06", time: "21.00", team1: "MALAM RABU", team2: "MALAM MINGGU", wasit1: "WARDOYO", wasit2: "RANTO", linesman: "MLM JMT" },
+            { id: 18, date: "2026-08-07", time: "19.30", team1: "MALAM SENIN", team2: "MALAM KAMIS", wasit1: "LUJENG", wasit2: "IRWAN", linesman: "PEMUDA" },
+            { id: 19, date: "2026-08-07", time: "21.00", team1: "BAHU RINGKIH", team2: "MALAM JUMAT", wasit1: "IRWAN", wasit2: "LUJENG", linesman: "PEMUDA" },
+            { id: 20, date: "2026-08-08", time: "21.00", team1: "MALAM SABTU", team2: "MALAM SELASA", wasit1: "NURI", wasit2: "SARTONO", linesman: "PEMUDA" },
+            { id: 21, date: "2026-08-09", time: "19.30", team1: "MALAM RABU", team2: "MALAM KAMIS", wasit1: "IRWAN", wasit2: "LUJENG", linesman: "PEMUDA" },
+            { id: 22, date: "2026-08-09", time: "21.00", team1: "MALAM MINGGU", team2: "MALAM JUMAT", wasit1: "LUJENG", wasit2: "IRWAN", linesman: "MLM SNN" },
+            { id: 23, date: "2026-08-10", time: "19.30", team1: "MALAM SENIN", team2: "MALAM SELASA", wasit1: "SARTONO", wasit2: "NURI", linesman: "PEMUDA" },
+            { id: 24, date: "2026-08-10", time: "21.00", team1: "BAHU RINGKIH", team2: "MALAM SABTU", wasit1: "NURI", wasit2: "SARTONO", linesman: "PEMUDA" },
+            { id: 25, date: "2026-08-11", time: "19.30", team1: "MALAM RABU", team2: "MALAM JUMAT", wasit1: "WARDOYO", wasit2: "SUPRIHONO", linesman: "PEMUDA" },
+            { id: 26, date: "2026-08-11", time: "21.00", team1: "MALAM KAMIS", team2: "MALAM SELASA", wasit1: "SUPRIHONO", wasit2: "WARDOYO", linesman: "PEMUDA" },
+            { id: 27, date: "2026-08-12", time: "19.30", team1: "MALAM MINGGU", team2: "MALAM SABTU", wasit1: "SUPRATMAN", wasit2: "SARTONO", linesman: "BR" },
+            { id: 28, date: "2026-08-12", time: "21.00", team1: "MALAM SENIN", team2: "BAHU RINGKIH", wasit1: "SARTONO", wasit2: "SUPRATMAN", linesman: "PEMUDA" }
+        ];
+
+        let matches = [];
+        let isAdmin = false;
+
+        // Initialize App State
+        function initApp() {
+            const savedData = localStorage.getItem('volleyball_tournament_data');
+            if (savedData) {
+                matches = JSON.parse(savedData);
+            } else {
+                matches = rawSchedule.map(m => ({
+                    ...m,
+                    sets: [{s1: '', s2: ''}, {s1: '', s2: ''}, {s1: '', s2: ''}, {s1: '', s2: ''}, {s1: '', s2: ''}],
+                    status: 'Belum Main',
+                    winner: '',
+                    scoreTeam1: 0,
+                    scoreTeam2: 0
+                }));
+                saveToLocalStorage();
+            }
+            renderLiveScore();
+            renderStandings();
+            renderMatches();
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('volleyball_tournament_data', JSON.stringify(matches));
+        }
+
+        // Admin Auth Handler
+        function toggleAdminModal() {
+            if (isAdmin) {
+                logoutAdmin();
+            } else {
+                document.getElementById('loginModal').classList.remove('hidden');
+            }
+        }
+
+        function loginAdmin() {
+            const pass = document.getElementById('adminPassInput').value;
+            if (pass === 'admin123' || pass === 'admin') {
+                isAdmin = true;
+                document.getElementById('adminBadge').classList.remove('hidden');
+                document.getElementById('loginModal').classList.add('hidden');
+                document.getElementById('adminPassInput').value = '';
+                renderMatches();
+                renderLiveScore();
+            } else {
+                alert('Password Admin Salah! (Default: admin123)');
+            }
+        }
+
+        function logoutAdmin() {
+            isAdmin = false;
+            document.getElementById('adminBadge').classList.add('hidden');
+            renderMatches();
+            renderLiveScore();
+        }
+
+        // Render Live Score Banner
+        function renderLiveScore() {
+            const container = document.getElementById('liveScoreContainer');
+            
+            // Cari pertandingan terdekat atau yang paling terbaru diisi
+            let activeMatch = matches.find(m => m.status === 'Selesai' || m.sets.some(s => s.s1 !== '' || s.s2 !== '')) || matches[0];
+
+            let setDetails = activeMatch.sets
+                .filter(s => s.s1 !== '' && s.s2 !== '')
+                .map((s, idx) => `<span class="bg-slate-800 px-2.5 py-1 rounded-lg text-xs font-mono text-slate-300">Set ${idx+1}: <b class="text-amber-400">${s.s1}-${s.s2}</b></span>`)
+                .join(' ');
+
+            if (!setDetails) {
+                setDetails = `<span class="text-xs text-slate-500 italic">Belum ada skor set diinput</span>`;
+            }
+
+            let editBtn = isAdmin 
+                ? `<button onclick="openEditModal(${activeMatch.id})" class="mt-3 px-4 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-xl transition inline-flex items-center gap-2"><i class="fa-solid fa-pen-to-square"></i> Input / Edit Skor Live</button>`
+                : ``;
+
+            container.innerHTML = `
+                <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                    <div class="space-y-1 text-center md:text-left">
+                        <span class="text-[10px] font-bold tracking-widest text-rose-400 uppercase bg-rose-500/10 px-2.5 py-1 rounded-full border border-rose-500/20">
+                            ${activeMatch.status === 'Selesai' ? 'PERTANDINGAN TERAKHIR' : 'MATCH HARI INI / LIVE'}
+                        </span>
+                        <div class="text-xs text-slate-400 pt-1"><i class="fa-solid fa-calendar-day text-amber-400 mr-1"></i> ${activeMatch.date} • Jam ${activeMatch.time} WIB</div>
+                    </div>
+
+                    <!-- Live Board -->
+                    <div class="flex items-center gap-4 md:gap-8 bg-slate-950/80 px-6 py-4 rounded-2xl border border-slate-800 shadow-inner">
+                        <div class="text-center">
+                            <div class="font-extrabold text-sm md:text-lg ${activeMatch.winner === activeMatch.team1 ? 'text-amber-400' : 'text-white'}">${activeMatch.team1}</div>
+                        </div>
+                        <div class="font-display text-2xl md:text-4xl font-black text-amber-400 bg-slate-900 px-4 py-1.5 rounded-xl border border-slate-700 shadow-lg">
+                            ${activeMatch.scoreTeam1} : ${activeMatch.scoreTeam2}
+                        </div>
+                        <div class="text-center">
+                            <div class="font-extrabold text-sm md:text-lg ${activeMatch.winner === activeMatch.team2 ? 'text-amber-400' : 'text-white'}">${activeMatch.team2}</div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col items-center md:items-end gap-2">
+                        <div class="flex flex-wrap gap-1.5 justify-center md:justify-end">
+                            ${setDetails}
+                        </div>
+                        ${editBtn}
+                    </div>
+                </div>
+            `;
+        }
+
+        // FIVB Standings Calculation Algorithm
+        function calculateStandings() {
+            const teamsList = ["MALAM RABU", "MALAM JUMAT", "MALAM MINGGU", "MALAM KAMIS", "MALAM SABTU", "MALAM SENIN", "BAHU RINGKIH", "MALAM SELASA"];
+            
+            let stats = {};
+            teamsList.forEach(team => {
+                stats[team] = {
+                    name: team, played: 0, won: 0, lost: 0, points: 0,
+                    setsWon: 0, setsLost: 0, ptsWon: 0, ptsLost: 0,
+                    h2h: {}
+                };
+            });
+
+            matches.forEach(m => {
+                if (m.status === 'Selesai') {
+                    const t1 = m.team1;
+                    const t2 = m.team2;
+
+                    stats[t1].played += 1;
+                    stats[t2].played += 1;
+
+                    let setsT1 = m.scoreTeam1;
+                    let setsT2 = m.scoreTeam2;
+
+                    stats[t1].setsWon += setsT1;
+                    stats[t1].setsLost += setsT2;
+                    stats[t2].setsWon += setsT2;
+                    stats[t2].setsLost += setsT1;
+
+                    m.sets.forEach(s => {
+                        let p1 = parseInt(s.s1) || 0;
+                        let p2 = parseInt(s.s2) || 0;
+                        stats[t1].ptsWon += p1;
+                        stats[t1].ptsLost += p2;
+                        stats[t2].ptsWon += p2;
+                        stats[t2].ptsLost += p1;
+                    });
+
+                    if (setsT1 === 3) {
+                        stats[t1].won += 1;
+                        stats[t2].lost += 1;
+                        if (setsT2 === 0 || setsT2 === 1) {
+                            stats[t1].points += 3;
+                        } else if (setsT2 === 2) {
+                            stats[t1].points += 2;
+                            stats[t2].points += 1;
+                        }
+                        stats[t1].h2h[t2] = 1;
+                        stats[t2].h2h[t1] = -1;
+                    } else if (setsT2 === 3) {
+                        stats[t2].won += 1;
+                        stats[t1].lost += 1;
+                        if (setsT1 === 0 || setsT1 === 1) {
+                            stats[t2].points += 3;
+                        } else if (setsT1 === 2) {
+                            stats[t2].points += 2;
+                            stats[t1].points += 1;
+                        }
+                        stats[t2].h2h[t1] = 1;
+                        stats[t1].h2h[t2] = -1;
+                    }
+                }
+            });
+
+            let list = Object.values(stats);
+
+            list.sort((a, b) => {
+                if (b.won !== a.won) return b.won - a.won;
+                if (b.points !== a.points) return b.points - a.points;
+
+                let setRatioA = a.setsLost === 0 ? a.setsWon : (a.setsWon / a.setsLost);
+                let setRatioB = b.setsLost === 0 ? b.setsWon : (b.setsWon / b.setsLost);
+                if (setRatioB !== setRatioA) return setRatioB - setRatioA;
+
+                let ptRatioA = a.ptsLost === 0 ? a.ptsWon : (a.ptsWon / a.ptsLost);
+                let ptRatioB = b.ptsLost === 0 ? b.ptsWon : (b.ptsWon / b.ptsLost);
+                if (ptRatioB !== ptRatioA) return ptRatioB - ptRatioA;
+
+                if (a.h2h[b.name] !== undefined) {
+                    return b.h2h[a.name] || -a.h2h[b.name];
+                }
+
+                return 0;
+            });
+
+            return list;
+        }
+
+        // Render Standings Table
+        function renderStandings() {
+            const data = calculateStandings();
+            const tbody = document.getElementById('standingsBody');
+            tbody.innerHTML = '';
+
+            data.forEach((item, index) => {
+                let setRatio = item.setsLost === 0 ? (item.setsWon > 0 ? 'MAX' : '0.000') : (item.setsWon / item.setsLost).toFixed(3);
+                let ptRatio = item.ptsLost === 0 ? (item.ptsWon > 0 ? 'MAX' : '0.000') : (item.ptsWon / item.ptsLost).toFixed(3);
+
+                let posBadgeClass = 'text-slate-400';
+                if (index === 0) posBadgeClass = 'bg-amber-500 text-slate-950 font-black rounded-lg w-6 h-6 inline-flex items-center justify-center';
+                else if (index === 1) posBadgeClass = 'bg-slate-300 text-slate-950 font-black rounded-lg w-6 h-6 inline-flex items-center justify-center';
+                else if (index === 2) posBadgeClass = 'bg-amber-700 text-white font-black rounded-lg w-6 h-6 inline-flex items-center justify-center';
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-800/40 transition border-b border-slate-800/40">
+                        <td class="py-3 px-4 text-center"><span class="${posBadgeClass}">${index + 1}</span></td>
+                        <td class="py-3 px-4 font-bold text-white flex items-center gap-2">
+                            ${item.name}
+                        </td>
+                        <td class="py-3 px-3 text-center">${item.played}</td>
+                        <td class="py-3 px-3 text-center font-bold text-emerald-400">${item.won}</td>
+                        <td class="py-3 px-3 text-center font-bold text-rose-400">${item.lost}</td>
+                        <td class="py-3 px-3 text-center font-extrabold text-amber-400 bg-amber-500/10">${item.points}</td>
+                        <td class="py-3 px-3 text-center">${item.setsWon} - ${item.setsLost}</td>
+                        <td class="py-3 px-3 text-center font-mono text-xs text-slate-400">${setRatio}</td>
+                        <td class="py-3 px-3 text-center text-xs">${item.ptsWon} - ${item.ptsLost}</td>
+                        <td class="py-3 px-3 text-center font-mono text-xs text-slate-400">${ptRatio}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Render Matches Card List
+        function renderMatches() {
+            const container = document.getElementById('matchesContainer');
+            const filter = document.getElementById('statusFilter').value;
+            container.innerHTML = '';
+
+            let filtered = matches;
+            if (filter === 'BELUM') filtered = matches.filter(m => m.status === 'Belum Main');
+            if (filter === 'SELESAI') filtered = matches.filter(m => m.status === 'Selesai');
+
+            filtered.forEach(m => {
+                let statusBadge = m.status === 'Selesai' 
+                    ? `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">SELESAI</span>`
+                    : `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">BELUM MAIN</span>`;
+
+                let editBtn = isAdmin 
+                    ? `<button onclick="openEditModal(${m.id})" class="ml-auto px-3 py-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-lg transition"><i class="fa-solid fa-pen-to-square"></i> Edit Skor</button>`
+                    : ``;
+
+                let setScoresDetail = '';
+                if (m.status === 'Selesai') {
+                    let setList = m.sets.filter(s => s.s1 !== '' && s.s2 !== '').map(s => `${s.s1}-${s.s2}`).join(' | ');
+                    setScoresDetail = `<div class="mt-2 text-[11px] font-mono text-slate-400 bg-slate-900/60 p-2 rounded-lg text-center">Set: ${setList}</div>`;
+                }
+
+                container.innerHTML += `
+                    <div class="card-glass p-5 rounded-2xl space-y-4 border border-slate-800 hover:border-slate-700 transition">
+                        <div class="flex justify-between items-center text-xs text-slate-400 border-b border-slate-800/80 pb-3">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-calendar text-amber-400"></i> ${m.date} | ${m.time} WIB
+                            </div>
+                            <div class="flex items-center gap-2">
+                                ${statusBadge}
+                                ${editBtn}
+                            </div>
+                        </div>
+
+                        <!-- Match Teams & Result -->
+                        <div class="grid grid-cols-7 items-center text-center">
+                            <div class="col-span-3 text-right">
+                                <div class="font-bold text-sm md:text-base ${m.winner === m.team1 ? 'text-amber-400 font-extrabold' : 'text-slate-200'}">${m.team1}</div>
+                            </div>
+                            <div class="col-span-1 flex flex-col items-center">
+                                ${m.status === 'Selesai' 
+                                    ? `<span class="font-display font-black text-xl text-white bg-slate-900 px-3 py-1 rounded-xl border border-slate-700">${m.scoreTeam1} : ${m.scoreTeam2}</span>` 
+                                    : `<span class="text-xs font-bold text-slate-500 bg-slate-900 px-2.5 py-1 rounded-lg">VS</span>`}
+                            </div>
+                            <div class="col-span-3 text-left">
+                                <div class="font-bold text-sm md:text-base ${m.winner === m.team2 ? 'text-amber-400 font-extrabold' : 'text-slate-200'}">${m.team2}</div>
+                            </div>
+                        </div>
+
+                        ${setScoresDetail}
+
+                        <!-- Referee Footer -->
+                        <div class="pt-2 border-t border-slate-800/50 flex flex-wrap justify-between items-center text-[11px] text-slate-400">
+                            <div><i class="fa-solid fa-user-ninja text-slate-500 mr-1"></i> Wasit 1: <b class="text-slate-300">${m.wasit1}</b> | Wasit 2: <b class="text-slate-300">${m.wasit2}</b></div>
+                            <div><i class="fa-solid fa-flag text-slate-500 mr-1"></i> Linesman: <b class="text-slate-300">${m.linesman}</b></div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // Open Modal to Input Scores
+        function openEditModal(matchId) {
+            const m = matches.find(item => item.id === matchId);
+            if (!m) return;
+
+            document.getElementById('editMatchId').value = m.id;
+            document.getElementById('modalMatchTitle').innerText = `Edit Match #${m.id}: ${m.date}`;
+            document.getElementById('modalTeam1Name').innerText = m.team1;
+            document.getElementById('modalTeam2Name').innerText = m.team2;
+
+            document.getElementById('editWasit1').value = m.wasit1;
+            document.getElementById('editWasit2').value = m.wasit2;
+            document.getElementById('editLinesman').value = m.linesman;
+
+            const container = document.getElementById('setsInputContainer');
+            container.innerHTML = '';
+
+            for (let i = 0; i < 5; i++) {
+                let s1Val = m.sets[i] ? m.sets[i].s1 : '';
+                let s2Val = m.sets[i] ? m.sets[i].s2 : '';
+
+                container.innerHTML += `
+                    <div class="flex items-center gap-3">
+                        <span class="text-xs text-slate-400 w-12 font-bold">Set ${i + 1}</span>
+                        <input type="number" min="0" max="50" id="set_${i}_1" value="${s1Val}" placeholder="0" class="w-1/2 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-center text-xs text-white focus:border-amber-500">
+                        <span class="text-slate-500 font-bold">:</span>
+                        <input type="number" min="0" max="50" id="set_${i}_2" value="${s2Val}" placeholder="0" class="w-1/2 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-center text-xs text-white focus:border-amber-500">
+                    </div>
+                `;
+            }
+
+            document.getElementById('editMatchModal').classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editMatchModal').classList.add('hidden');
+        }
+
+        // Save Match Score & Trigger Recalculations
+        function saveScore(e) {
+            e.preventDefault();
+            const id = parseInt(document.getElementById('editMatchId').value);
+            const m = matches.find(item => item.id === id);
+            if (!m) return;
+
+            m.wasit1 = document.getElementById('editWasit1').value;
+            m.wasit2 = document.getElementById('editWasit2').value;
+            m.linesman = document.getElementById('editLinesman').value;
+
+            let setsWonT1 = 0;
+            let setsWonT2 = 0;
+            let playedAnySet = false;
+
+            for (let i = 0; i < 5; i++) {
+                let s1 = document.getElementById(`set_${i}_1`).value;
+                let s2 = document.getElementById(`set_${i}_2`).value;
+
+                m.sets[i] = { s1: s1, s2: s2 };
+
+                if (s1 !== '' && s2 !== '') {
+                    playedAnySet = true;
+                    let p1 = parseInt(s1) || 0;
+                    let p2 = parseInt(s2) || 0;
+                    if (p1 > p2) setsWonT1++;
+                    else if (p2 > p1) setsWonT2++;
+                }
+            }
+
+            m.scoreTeam1 = setsWonT1;
+            m.scoreTeam2 = setsWonT2;
+
+            if (setsWonT1 === 3 || setsWonT2 === 3) {
+                m.status = 'Selesai';
+                m.winner = setsWonT1 === 3 ? m.team1 : m.team2;
+            } else if (playedAnySet) {
+                m.status = 'Belum Main';
+                m.winner = '';
+            } else {
+                m.status = 'Belum Main';
+                m.winner = '';
+            }
+
+            saveToLocalStorage();
+            renderLiveScore();
+            renderStandings();
+            renderMatches();
+            closeEditModal();
+        }
+
+        function resetMatchScore() {
+            const id = parseInt(document.getElementById('editMatchId').value);
+            const m = matches.find(item => item.id === id);
+            if (m) {
+                m.sets = [{s1: '', s2: ''}, {s1: '', s2: ''}, {s1: '', s2: ''}, {s1: '', s2: ''}, {s1: '', s2: ''}];
+                m.status = 'Belum Main';
+                m.winner = '';
+                m.scoreTeam1 = 0;
+                m.scoreTeam2 = 0;
+                saveToLocalStorage();
+                renderLiveScore();
+                renderStandings();
+                renderMatches();
+                closeEditModal();
+            }
+        }
+
+        // Run App
+        window.onload = initApp;
+    </script>
+</body>
+</html>
